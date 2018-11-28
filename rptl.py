@@ -1,13 +1,15 @@
 import click
+import os
 
 INTERVAL_MAX_LIMIT = 180  # 3 minutes
 FRAMES_MAX_LIMIT = 1000
-ISO_MIN_LIMIT = 100
-ISO_MAX_LIMIT = 800
+ISO_MIN_LIMIT = 0
+ISO_MAX_LIMIT = 1000
+
 
 @click.command()
 @click.option('--name', '-n', required=True,
-              type=click.Path(file_okay=False, dir_okay=True),
+              type=click.Path(file_okay=False, dir_okay=True, writable=True),
               prompt='Enter a unique directory name to store images. NO spaces, ONLY letters and numbers',
               help='directory name')
 @click.option('--iso', '-i', type=click.IntRange(ISO_MIN_LIMIT, ISO_MAX_LIMIT), help='manual ISO setting')
@@ -34,8 +36,16 @@ def cli(interval, total, name, iso):
     For best results, avoid variations in lighting or color during the
     time lapse.
     """
-    click.echo('Interval: {}'.format(interval))
-    click.echo('Total: {}'.format(total))
-    click.echo('Directory Name: {}'.format(name))
-    click.echo('ISO: {}'.format(iso))
 
+    if not os.path.exists(name):
+        try:
+            os.mkdir(name)
+            click.echo('Directory \'{}\' created!'.format(name))
+            click.echo('[Settings]')
+            click.echo('Interval: {}'.format(interval))
+            click.echo('Total: {}'.format(total))
+            click.echo('ISO: {}'.format(iso))
+        except OSError:
+            click.echo('\'{}\' is not a valid directory name! Try using only letters and numbers'.format(name))
+    else:
+        click.echo('\'{}\' directory already exists! Choose a unique directory name.'.format(name))
