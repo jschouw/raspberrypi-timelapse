@@ -1,5 +1,7 @@
 import click
 import os
+from picamera import PiCamera
+from time import sleep
 
 INTERVAL_MAX_LIMIT = 180  # 3 minutes
 FRAMES_MAX_LIMIT = 1000
@@ -45,12 +47,33 @@ def cli(interval, total, name, iso):
                            'it will be set automatically)\n').format(name, interval, total, iso)
 
     if not os.path.exists(name):
+        # Show confirmation prompt so user can review settings
         if click.confirm(confirm_prompt_text, abort=True, default=True, show_default=True):
-            try:
+            try:  # Directory creation
                 os.mkdir(name)
                 click.echo('Directory \'{}\' created!'.format(name))
             except OSError:
                 click.echo('\'{}\' is not a valid directory name! '
                            'Try using only letters, numbers, and underscores.'.format(name))
+
+            # Create camera and adjust settings
+            camera = PiCamera(resolution=(1280, 720))
+            if iso is not None:
+                camera.iso = iso
+            sleep(3)  # TODO: Show the user this is happening so they don't think it's broken
+            camera.shutter_speed = camera.exposure_speed
+            camera.exposure_mode = 'off'
+            gains = camera.awb_gains
+            camera.awb_mode = 'off'
+            camera.awb_gains = gains
+
+            # Start time lapse
+            count = 0
+            for filename in camera.capture_continuous(name.join('{counter:04d}.jpg')):  # TODO: Test naming convention!
+                click.echo('{} captured.'.format(filename))
+                count += 1
+                if count >= total:
+                    break  # Break the loop of capture_continuous() to stop the time lapse
+
     else:
         click.echo('\'{}\' directory already exists! Choose a unique directory name.'.format(name))
