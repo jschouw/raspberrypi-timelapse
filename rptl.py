@@ -37,15 +37,20 @@ def cli(interval, total, name, iso):
     time lapse.
     """
 
+    confirm_prompt_text = ('\n[Are you sure these settings are correct?]'
+                           '\nDirectory name:  \'{}\''
+                           '\nInterval:         {} second(s) between each exposure'
+                           '\nTotal:            {} exposures'
+                           '\nISO:              {}     (if ISO is the default \'None\', '
+                           'it will be set automatically)\n').format(name, interval, total, iso)
+
     if not os.path.exists(name):
-        try:
-            os.mkdir(name)
-            click.echo('Directory \'{}\' created!'.format(name))
-            click.echo('[Settings]')
-            click.echo('Interval: {}'.format(interval))
-            click.echo('Total: {}'.format(total))
-            click.echo('ISO: {}'.format(iso))
-        except OSError:
-            click.echo('\'{}\' is not a valid directory name! Try using only letters, numbers, and underscores.'.format(name))
+        if click.confirm(confirm_prompt_text, abort=True, default=True, show_default=True):
+            try:
+                os.mkdir(name)
+                click.echo('Directory \'{}\' created!'.format(name))
+            except OSError:
+                click.echo('\'{}\' is not a valid directory name! '
+                           'Try using only letters, numbers, and underscores.'.format(name))
     else:
         click.echo('\'{}\' directory already exists! Choose a unique directory name.'.format(name))
