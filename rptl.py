@@ -3,14 +3,14 @@ import os
 
 INTERVAL_MAX_LIMIT = 180  # 3 minutes
 FRAMES_MAX_LIMIT = 1000
-ISO_MIN_LIMIT = 0
+ISO_MIN_LIMIT = 100
 ISO_MAX_LIMIT = 1000
 
 
 @click.command()
 @click.option('--name', '-n', required=True,
               type=click.Path(file_okay=False, dir_okay=True, writable=True),
-              prompt='Enter a unique directory name to store images. NO spaces, ONLY letters and numbers',
+              prompt='Enter a unique directory name to store images. NO spaces, ONLY letters, numbers, and underscores',
               help='directory name')
 @click.option('--iso', '-i', type=click.IntRange(ISO_MIN_LIMIT, ISO_MAX_LIMIT), help='manual ISO setting')
 @click.argument('interval', type=click.IntRange(0, INTERVAL_MAX_LIMIT))
@@ -46,6 +46,6 @@ def cli(interval, total, name, iso):
             click.echo('Total: {}'.format(total))
             click.echo('ISO: {}'.format(iso))
         except OSError:
-            click.echo('\'{}\' is not a valid directory name! Try using only letters and numbers'.format(name))
+            click.echo('\'{}\' is not a valid directory name! Try using only letters, numbers, and underscores.'.format(name))
     else:
         click.echo('\'{}\' directory already exists! Choose a unique directory name.'.format(name))
