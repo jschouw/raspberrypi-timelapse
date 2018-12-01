@@ -7,6 +7,7 @@ setup(
     py_modules=['rptl'],
     install_requires=[
         'Click',
+        'picamera',
     ],
     entry_points='''
         [console_scripts]

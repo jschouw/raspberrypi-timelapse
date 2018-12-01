@@ -1,5 +1,7 @@
 import click
 import os
+from picamera import PiCamera
+from time import sleep
 
 INTERVAL_MAX_LIMIT = 180  # 3 minutes
 FRAMES_MAX_LIMIT = 1000
@@ -45,12 +47,36 @@ def cli(interval, total, name, iso):
                            'it will be set automatically)\n').format(name, interval, total, iso)
 
     if not os.path.exists(name):
+        # Show confirmation prompt so user can review settings
         if click.confirm(confirm_prompt_text, abort=True, default=True, show_default=True):
-            try:
+            try:  # Directory creation
                 os.mkdir(name)
-                click.echo('Directory \'{}\' created!'.format(name))
             except OSError:
                 click.echo('\'{}\' is not a valid directory name! '
                            'Try using only letters, numbers, and underscores.'.format(name))
+
+            # Camera creation, auto-adjust settings before disabling auto-adjust
+            camera = PiCamera(resolution=(1280, 960))
+            # Set custom ISO if provided by user
+            if iso is not None:
+                camera.iso = iso
+            # Show progress bar while letting camera auto-adjust, sleep for 3 seconds
+            with click.progressbar(length=3, label='Letting the camera auto-adjust', show_eta=False) as bar:
+                for iteration in bar:
+                    sleep(1)
+            # Set shutter speed
+            camera.shutter_speed = camera.exposure_speed
+            camera.exposure_mode = 'off'
+            click.echo('Shutter speed set to {}'.format(camera.shutter_speed))
+            # Set white balance
+            gains = camera.awb_gains
+            camera.awb_mode = 'off'
+            camera.awb_gains = gains
+            click.echo('White balance set to {}'.format(camera.awb_gains))
+            # Show progress bar and start time lapse
+            with click.progressbar(camera.capture_continuous(name.join('{counter:04d}.jpg')),
+                                   label='Taking time lapse... Press Ctrl-C to abort!') as bar:
+                for iteration in bar:
+                    pass  # TODO: Find a better way to do this? It seems clunky. Test thoroughly!
     else:
         click.echo('\'{}\' directory already exists! Choose a unique directory name.'.format(name))
