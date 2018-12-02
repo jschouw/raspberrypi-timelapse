@@ -80,7 +80,7 @@ def cli(interval, total, name, iso):
                     if count == total:
                         break
                     else:
-                        camera.capture('image{}.jpg'.format(count))
+                        camera.capture('/{}/image{}.jpg'.format(name, count))
                         count += 1
                         sleep(interval*1000)
     else:
