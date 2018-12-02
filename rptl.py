@@ -74,7 +74,7 @@ def cli(interval, total, name, iso):
             camera.awb_gains = gains
             click.echo('White balance set to {}'.format(camera.awb_gains))
             # Show progress bar and start time lapse
-            with click.progressbar(camera.capture_continuous(name.join('{counter:04d}.jpg')),
+            with click.progressbar(camera.capture_continuous('image{counter:04d}.jpg'),
                                    label='Taking time lapse... Press Ctrl-C to abort!') as bar:
                 for iteration in bar:
                     pass  # TODO: Find a better way to do this? It seems clunky. Test thoroughly!
