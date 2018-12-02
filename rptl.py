@@ -74,9 +74,14 @@ def cli(interval, total, name, iso):
             camera.awb_gains = gains
             click.echo('White balance set to {}'.format(camera.awb_gains))
             # Show progress bar and start time lapse
-            with click.progressbar(camera.capture_continuous('image{counter:04d}.jpg'),
-                                   label='Taking time lapse... Press Ctrl-C to abort!') as bar:
+            count = 0
+            with click.progressbar(length=total, label='Taking time lapse... Press Ctrl-C to abort!') as bar:
                 for iteration in bar:
-                    pass  # TODO: Find a better way to do this? It seems clunky. Test thoroughly!
+                    if count == total:
+                        break
+                    else:
+                        camera.capture('image{}.jpg'.format(count))
+                        count += 1
+                        sleep(interval*1000)
     else:
         click.echo('\'{}\' directory already exists! Choose a unique directory name.'.format(name))
