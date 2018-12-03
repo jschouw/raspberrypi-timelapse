@@ -11,7 +11,7 @@ ISO_MAX_LIMIT = 1000
 
 @click.command()
 @click.option('--name', '-n', required=True,
-              type=click.Path(file_okay=False, dir_okay=True, writable=True),
+              type=click.Path(file_okay=False, dir_okay=True, writable=True, resolve_path=True),
               prompt='Enter a unique directory name to store images. NO spaces, ONLY letters, numbers, and underscores',
               help='directory name')
 @click.option('--iso', '-i', type=click.IntRange(ISO_MIN_LIMIT, ISO_MAX_LIMIT), help='manual ISO setting')
@@ -74,14 +74,9 @@ def cli(interval, total, name, iso):
             camera.awb_gains = gains
             click.echo('White balance set to {}'.format(camera.awb_gains))
             # Show progress bar and start time lapse
-            count = 0
-            with click.progressbar(length=total, label='Taking time lapse... Press Ctrl-C to abort!') as bar:
+            with click.progressbar(length=total, label='Taking time lapse', show_eta=False) as bar:
                 for iteration in bar:
-                    if count == total:
-                        break
-                    else:
-                        camera.capture('/{}/image{}.jpg'.format(name, count))
-                        count += 1
-                        sleep(interval*1000)
+                    camera.capture('{}/image{}.jpg'.format(name, iteration))
+                    sleep(1)
     else:
         click.echo('\'{}\' directory already exists! Choose a unique directory name.'.format(name))
